@@ -26,7 +26,7 @@ func main() {
 		speedStep    int
 		initFanSpeed int
 		minFanSpeed  int
-		//gpuQuantity		int
+		gpuQuantity  int
 	)
 
 	// Выставить параметры логирования
@@ -37,9 +37,12 @@ func main() {
 	log.Debugf("Full config file name: %s", fullConfigFileName)
 
 	// Чтение параметров из конфигурационного файла
-	getConfigParameters(fullConfigFileName, debugLevel, highTemp, lowTemp, sleepTime, speedStep, initFanSpeed, minFanSpeed)
+	getConfigParameters(
+		fullConfigFileName, debugLevel,
+		highTemp, lowTemp, sleepTime, speedStep, initFanSpeed, minFanSpeed)
 
 	// Получить количество GPU в системе
+	getGpuQuantity(gpuQuantity)
 
 	// Выставить начальные скорости вентиляторов
 
@@ -47,6 +50,14 @@ func main() {
 
 }
 
+/* Количество GPU в системе */
+func getGpuQuantity(gpuQuantity int) {
+	gpuQuantity = 0
+
+	log.Debugf("GPU quantity: %d", gpuQuantity)
+}
+
+/* Получить параметры из конфигурационного INI файла */
 func getConfigParameters(
 	fullConfigFileName string, debugLevel string,
 	highTemp int, lowTemp int, sleepTime int, speedStep int, initFanSpeed int, minFanSpeed int) {
@@ -82,11 +93,12 @@ func getConfigParameters(
 	log.Debugf("Minimal fan Speed: %d%%", minFanSpeed)
 }
 
+/* Выставить параметры логирования */
 func SetLog(debugLevel log.Level) {
 	log.SetOutput(Stdout)
 	customFormatter := new(log.TextFormatter)
 	customFormatter.TimestampFormat = "2006/01/02 15:04:05"
 	log.SetFormatter(customFormatter)
 	customFormatter.FullTimestamp = true
-	log.SetLevel(debugLevel) // Уровень логирования, до уточнения из конфиг файла
+	log.SetLevel(debugLevel)
 }
