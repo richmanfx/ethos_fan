@@ -6,9 +6,11 @@
 package main
 
 import (
+	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/ini.v1"
 	. "os"
+	"os/exec"
 )
 
 func main() {
@@ -54,7 +56,19 @@ func main() {
 func getGpuQuantity(gpuQuantity int) {
 	gpuQuantity = 0
 
-	log.Debugf("GPU quantity: %d", gpuQuantity)
+	//command := exec.Command("/opt/ethos/bin/ethos-smi | grep \"\\[\" | grep \"\\]\" | grep GPU | tail -1 | cut -f 1 -d \" \" | cut -c 4,5")
+	command := exec.Command("ls", "-la")
+	// Про пайп; https://stackoverflow.com/questions/10781516/how-to-pipe-several-commands-in-go
+	//command := exec.Command("ethos-smi", "|", "grep", "GPU")
+	var buf bytes.Buffer
+	command.Stdout = &buf
+	err := command.Start()
+	if err != nil {
+		log.Debugf("error: %v\n", err)
+	}
+	err = command.Wait()
+	log.Debugf("Command finished with output: %v\n", buf.String())
+	//log.Debugf("GPU quantity: %d", gpuQuantity)
 }
 
 /* Получить параметры из конфигурационного INI файла */
@@ -64,7 +78,7 @@ func getConfigParameters(
 
 	config, err := ini.Load(fullConfigFileName)
 	if err != nil {
-		log.Debugf("Fail to read config file '%s': %v", fullConfigFileName, err)
+		log.Debugf("Fail to read config file: %v", err)
 		Exit(1)
 	}
 
