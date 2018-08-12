@@ -19,13 +19,14 @@ func main() {
 	)
 
 	var (
-	//highTemp int
-	//lowTemp int
-	//sleepTime int
-	//speedStep int
-	//initFanSpeed int
-	//minFanSpeed int
-	//gpuQuantity int
+		debugLevel   = "DEBUG"
+		highTemp     int
+		lowTemp      int
+		sleepTime    int
+		speedStep    int
+		initFanSpeed int
+		minFanSpeed  int
+		//gpuQuantity		int
 	)
 
 	// Выставить параметры логирования
@@ -36,12 +37,7 @@ func main() {
 	log.Debugf("Full config file name: %s", fullConfigFileName)
 
 	// Чтение параметров из конфигурационного файла
-	config, err := ini.Load(fullConfigFileName)
-	if err != nil {
-		log.Debugf("Fail to read config file '%s': %v", fullConfigFileName, err)
-		Exit(1)
-	}
-	log.Debugln("Debug level:", config.Section("").Key("DEBUG_LEVEL").String())
+	getConfigParameters(fullConfigFileName, debugLevel, highTemp, lowTemp, sleepTime, speedStep, initFanSpeed, minFanSpeed)
 
 	// Получить количество GPU в системе
 
@@ -49,6 +45,41 @@ func main() {
 
 	// Основной цикл
 
+}
+
+func getConfigParameters(
+	fullConfigFileName string, debugLevel string,
+	highTemp int, lowTemp int, sleepTime int, speedStep int, initFanSpeed int, minFanSpeed int) {
+
+	config, err := ini.Load(fullConfigFileName)
+	if err != nil {
+		log.Debugf("Fail to read config file '%s': %v", fullConfigFileName, err)
+		Exit(1)
+	}
+
+	debugLevel = config.Section("").Key("DEBUG_LEVEL").String()
+	if debugLevel == "INFO" {
+		SetLog(log.InfoLevel)
+	}
+	log.Debugf("Debug level: %s", debugLevel)
+
+	highTemp = config.Section("").Key("HIGH_TEMP").MustInt(60)
+	log.Debugf("High temperature: %d°C", highTemp)
+
+	lowTemp = config.Section("").Key("LOW_TEMP").MustInt(55)
+	log.Debugf("Low temperature: %d°C", lowTemp)
+
+	sleepTime = config.Section("").Key("SLEEP_TIME").MustInt(60)
+	log.Debugf("Sleep time: %ds", sleepTime)
+
+	speedStep = config.Section("").Key("SPEED_STEP").MustInt(5)
+	log.Debugf("Speed step: %d%%", speedStep)
+
+	initFanSpeed = config.Section("").Key("INIT_FAN_SPEED").MustInt(80)
+	log.Debugf("Initial fan Speed: %d%%", initFanSpeed)
+
+	minFanSpeed = config.Section("").Key("MIN_FAN_SPEED").MustInt(15)
+	log.Debugf("Minimal fan Speed: %d%%", minFanSpeed)
 }
 
 func SetLog(debugLevel log.Level) {
