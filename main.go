@@ -6,12 +6,12 @@
 package main
 
 import (
-	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/ini.v1"
-	"io"
 	. "os"
 	"os/exec"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -45,7 +45,9 @@ func main() {
 		highTemp, lowTemp, sleepTime, speedStep, initFanSpeed, minFanSpeed)
 
 	// Получить количество GPU в системе
-	getGpuQuantity(gpuQuantity)
+	gpuQuantity = getGpuQuantity()
+
+	log.Debugf("GPUs: %d", gpuQuantity)
 
 	// Выставить начальные скорости вентиляторов
 
@@ -54,39 +56,20 @@ func main() {
 }
 
 /* Количество GPU в системе */
-func getGpuQuantity(gpuQuantity int) {
-	gpuQuantity = 0
+func getGpuQuantity() (gpuQuantity int) {
 
-	//command := exec.Command("/opt/ethos/bin/ethos-smi | grep \"\\[\" | grep \"\\]\" | grep GPU | tail -1 | cut -f 1 -d \" \" | cut -c 4,5")
-	//command := exec.Command("ls", "-la")
-	command1 := exec.Command("ethos-smi")
-	command2 := exec.Command("grep", "GPU")
+	command := "/opt/ethos/bin/ethos-smi | grep \"\\[\" | grep \"\\]\" | grep GPU | tail -1 | cut -f 1 -d \" \" | cut -c 4,5"
+	out, err := exec.Command("bash", "-c", command).Output()
 
-	r, w := io.Pipe()
-	command1.Stdout = w
-	command2.Stdin = r
+	if err != nil {
+		log.Debugf("Failed to execute command: %s", out)
+	}
 
-	var b2 bytes.Buffer
-	command2.Stdout = &b2
+	gpuQuantity, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
 
-	command1.Start()
-	command2.Start()
-	command1.Wait()
-	w.Close()
-	command2.Wait()
-	io.Copy(Stdout, &b2)
+	log.Debugf("GPU quantity: '%d'", gpuQuantity)
 
-	// Про пайп; https://stackoverflow.com/questions/10781516/how-to-pipe-several-commands-in-go
-	//command := exec.Command("ethos-smi", "|", "grep", "GPU")
-	//var buf bytes.Buffer
-	//command.Stdout = &buf
-	//err := command.Start()
-	//if err != nil {
-	//	log.Debugf("error: %v\n", err)
-	//}
-	//err = command.Wait()
-	log.Debugf("Command finished with output: %v\n", b2.String())
-	//log.Debugf("GPU quantity: %d", gpuQuantity)
+	return gpuQuantity
 }
 
 /* Получить параметры из конфигурационного INI файла */
