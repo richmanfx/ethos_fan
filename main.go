@@ -55,6 +55,24 @@ func main() {
 
 }
 
+/*****************************************************************************
+ * Проверяет попадание значения в валидный диапазон значений                 *
+ *    Param: minimum - нижнее значение диапазона                             *
+ *    Param: maximum - верхнее значение диапазона                            *
+ *    Param: value - проверяемое значение                                 *
+ *    Return: True - значение в диапазоне, False - значение вне диапазона    *
+ *****************************************************************************/
+func checkValidInRange(minimum, maximum, value int) (result bool) {
+
+	if (value >= minimum) && (value <= maximum) {
+		result = true
+	} else {
+		result = false
+	}
+
+	return result
+}
+
 /* Количество GPU в системе */
 func getGpuQuantity() (gpuQuantity int) {
 
