@@ -42,8 +42,7 @@ func main() {
 
 	// Чтение параметров из конфигурационного файла
 	getConfigParameters(
-		fullConfigFileName, debugLevel,
-		highTemp, lowTemp, sleepTime, speedStep, initFanSpeed, minFanSpeed)
+		fullConfigFileName, debugLevel, &highTemp, &lowTemp, &sleepTime, &speedStep, &initFanSpeed, &minFanSpeed)
 
 	// Получить количество GPU в системе
 	gpuQuantity = getGpuQuantity()
@@ -54,11 +53,22 @@ func main() {
 
 	log.Debugf("Fan speed GPU0: %d", getGpuFanSpeed(0))
 
-	setGpuFanSpeed(4, 40)
+	//setGpuFanSpeed(4, 40)
+	setInitialFanSpeed(gpuQuantity, initFanSpeed)
 
 	// Выставить начальные скорости вентиляторов
 
 	// Основной цикл
+
+}
+
+/* Первоначальная установка оборотов вентиляторов после старта системы */
+func setInitialFanSpeed(gpuQuantity, initFanSpeed int) {
+
+	for gpu := 0; gpu <= gpuQuantity-1; gpu++ {
+		log.Debugf("GPU: %d, initFanSpeed: %d", gpu, initFanSpeed)
+		setGpuFanSpeed(gpu, initFanSpeed)
+	}
 
 }
 
@@ -150,7 +160,7 @@ func getGpuQuantity() (gpuQuantity int) {
 /* Получить параметры из конфигурационного INI файла */
 func getConfigParameters(
 	fullConfigFileName string, debugLevel string,
-	highTemp int, lowTemp int, sleepTime int, speedStep int, initFanSpeed int, minFanSpeed int) {
+	highTemp *int, lowTemp *int, sleepTime *int, speedStep *int, initFanSpeed *int, minFanSpeed *int) {
 
 	config, err := ini.Load(fullConfigFileName)
 	if err != nil {
@@ -164,23 +174,23 @@ func getConfigParameters(
 	}
 	log.Debugf("Debug level: %s", debugLevel)
 
-	highTemp = config.Section("").Key("HIGH_TEMP").MustInt(60)
-	log.Debugf("High temperature: %d°C", highTemp)
+	*highTemp = config.Section("").Key("HIGH_TEMP").MustInt(60)
+	log.Debugf("High temperature: %d°C", *highTemp)
 
-	lowTemp = config.Section("").Key("LOW_TEMP").MustInt(55)
-	log.Debugf("Low temperature: %d°C", lowTemp)
+	*lowTemp = config.Section("").Key("LOW_TEMP").MustInt(55)
+	log.Debugf("Low temperature: %d°C", *lowTemp)
 
-	sleepTime = config.Section("").Key("SLEEP_TIME").MustInt(60)
-	log.Debugf("Sleep time: %ds", sleepTime)
+	*sleepTime = config.Section("").Key("SLEEP_TIME").MustInt(60)
+	log.Debugf("Sleep time: %ds", *sleepTime)
 
-	speedStep = config.Section("").Key("SPEED_STEP").MustInt(5)
-	log.Debugf("Speed step: %d%%", speedStep)
+	*speedStep = config.Section("").Key("SPEED_STEP").MustInt(5)
+	log.Debugf("Speed step: %d%%", *speedStep)
 
-	initFanSpeed = config.Section("").Key("INIT_FAN_SPEED").MustInt(80)
-	log.Debugf("Initial fan Speed: %d%%", initFanSpeed)
+	*initFanSpeed = config.Section("").Key("INIT_FAN_SPEED").MustInt(80)
+	log.Debugf("Initial fan Speed: %d%%", *initFanSpeed)
 
-	minFanSpeed = config.Section("").Key("MIN_FAN_SPEED").MustInt(15)
-	log.Debugf("Minimal fan Speed: %d%%", minFanSpeed)
+	*minFanSpeed = config.Section("").Key("MIN_FAN_SPEED").MustInt(15)
+	log.Debugf("Minimal fan Speed: %d%%", *minFanSpeed)
 }
 
 /* Выставить параметры логирования */
