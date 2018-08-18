@@ -54,12 +54,75 @@ func main() {
 	log.Debugf("Fan speed GPU0: %d", getGpuFanSpeed(0))
 
 	//setGpuFanSpeed(4, 40)
-	setInitialFanSpeed(gpuQuantity, initFanSpeed)
 
 	// Выставить начальные скорости вентиляторов
+	setInitialFanSpeed(gpuQuantity, initFanSpeed)
 
 	// Основной цикл
 
+}
+
+/* Изменить скорость вентиляторов для всех карт в зависимости от температуры */
+func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speedStep, minFanSpeed int) {
+
+	var newFanSpeed int
+	var currentTemp int
+	var currentFanSpeed int
+
+	newFanSpeed = initFanSpeed
+
+	for gpu := 0; gpu <= gpuQuantity-1; gpu++ {
+
+		currentTemp = getGpuTemp(gpu)
+		currentFanSpeed = getGpuFanSpeed(gpu)
+		log.Debugf("GPU %d: Temp: %d°C, Fan speed: %d%%", gpu, currentTemp, currentFanSpeed)
+
+		if !checkValidInRange(lowTemp, highTemp, currentTemp) {
+
+			log.Debugf("GPU %d: Out of temperature range %d...%d °C", gpu, lowTemp, highTemp)
+
+			// Новая скорость кулеров при высокой температуре
+			newFanSpeed = checkHighTemp(currentTemp, highTemp, currentFanSpeed, speedStep)
+
+			// Новая скорость кулеров при низкой температуре
+			newFanSpeed = checkLowTemp(currentTemp, lowTemp, currentFanSpeed, minFanSpeed, speedStep)
+
+			if (currentTemp > highTemp) || (currentTemp < lowTemp) {
+				setGpuFanSpeed(gpu, newFanSpeed)
+				log.Debugf("GPU %d: Set new fan speed: %d %%", gpu, newFanSpeed)
+			}
+
+		}
+	}
+}
+
+/* Новая скорость кулеров при низкой температуре */
+func checkLowTemp(currentTemp int, lowTemp int, currentFanSpeed int, minFanSpeed int, speedStep int) (newFanSpeed int) {
+	if currentTemp < lowTemp {
+		if currentFanSpeed > minFanSpeed {
+			newFanSpeed = currentFanSpeed - speedStep
+		} else {
+			newFanSpeed = minFanSpeed
+		}
+	}
+	return newFanSpeed
+}
+
+/* Новая скорость кулеров при высокой температуре */
+func checkHighTemp(currentTemp int, highTemp int, currentFanSpeed int, speedStep int) (newFanSpeed int) {
+	if currentTemp > highTemp {
+		if currentFanSpeed < 100 {
+			if currentFanSpeed > 94 {
+				newFanSpeed = 100
+			} else {
+				newFanSpeed = currentFanSpeed + speedStep
+			}
+		} else {
+			newFanSpeed = currentFanSpeed
+		}
+	}
+
+	return newFanSpeed
 }
 
 /* Первоначальная установка оборотов вентиляторов после старта системы */

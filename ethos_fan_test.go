@@ -55,3 +55,17 @@ func TestCheckValidInRange(t *testing.T) {
 		}
 	}
 }
+
+func TestSetNewFanSpeedForAllGpu(t *testing.T) {
+
+	type TestData struct {
+		gpuQuantity  int
+		initFanSpeed int
+		lowTemp      int
+		highTemp     int
+		speedStep    int
+		minFanSpeed  int
+		expectedResult
+	}
+
+}
