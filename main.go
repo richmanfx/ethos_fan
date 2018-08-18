@@ -6,6 +6,7 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/ini.v1"
 	. "os"
@@ -49,10 +50,29 @@ func main() {
 
 	log.Debugf("GPUs: %d", gpuQuantity)
 
+	log.Debugf("Temperature GPU0: %d", getGpuTemp(0))
+
 	// Выставить начальные скорости вентиляторов
 
 	// Основной цикл
 
+}
+
+/* Температура GPU */
+func getGpuTemp(gpuNumber int) (gpuTemp int) {
+	// Нумерация GPU с нуля
+
+	command := fmt.Sprintf("ethos-smi -g %d | grep \"* Temperature\" | cut -f 4 -d \" \" | rev | cut -c 2- | rev", gpuNumber)
+	out, err := exec.Command("bash", "-c", command).Output()
+
+	if err != nil {
+		log.Debugf("Failed to execute command: %s", out)
+	}
+
+	gpuTemp, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
+	log.Debugf("GPU temperature: '%d'", gpuTemp)
+
+	return
 }
 
 /*****************************************************************************
@@ -85,9 +105,11 @@ func getGpuQuantity() (gpuQuantity int) {
 
 	gpuQuantity, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
 
+	gpuQuantity += 1 // Нумерация GPU в системе начинается с нуля
+
 	log.Debugf("GPU quantity: '%d'", gpuQuantity)
 
-	return gpuQuantity
+	return
 }
 
 /* Получить параметры из конфигурационного INI файла */
