@@ -52,10 +52,28 @@ func main() {
 
 	log.Debugf("Temperature GPU0: %d", getGpuTemp(0))
 
+	log.Debugf("Fan speed GPU0: %d", getGpuFanSpeed(0))
+
 	// Выставить начальные скорости вентиляторов
 
 	// Основной цикл
 
+}
+
+/* Обороты вентилятора GPU */
+func getGpuFanSpeed(gpuNumber int) (gpuFanSpeed int) {
+	// Нумерация GPU с нуля
+	command := fmt.Sprintf("ethos-smi -g %d | grep \"* Fan Speed\" | cut -f 5 -d \" \" | rev | cut -c 2- | rev", gpuNumber)
+	out, err := exec.Command("bash", "-c", command).Output()
+
+	if err != nil {
+		log.Debugf("Failed to execute command: %s", out)
+	}
+
+	gpuFanSpeed, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
+	log.Debugf("GPU fan speed: '%d'", gpuFanSpeed)
+
+	return
 }
 
 /* Температура GPU */
