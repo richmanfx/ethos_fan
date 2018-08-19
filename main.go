@@ -164,37 +164,28 @@ func setGpuFanSpeed(gpuNumber, newFanSpeed int) {
 	}
 }
 
-// TODO: почти одинаковые функции - вынести в отдельную
-/* Обороты вентилятора GPU */
-func getGpuFanSpeed(gpuNumber int) (gpuFanSpeed int) {
-	// Нумерация GPU с нуля
-	command := fmt.Sprintf("ethos-smi -g %d | grep \"* Fan Speed\" | cut -f 5 -d \" \" | rev | cut -c 2- | rev", gpuNumber)
+/* Выполнить команду в ОС, вернуть результат */
+func runOsCommand(commandParameter int, osCommandTemplate string) (result int) {
+	command := fmt.Sprintf(osCommandTemplate, commandParameter)
 	out, err := exec.Command("bash", "-c", command).Output()
-
 	if err != nil {
 		log.Debugf("Failed to execute command: %s", out)
 	}
-
-	gpuFanSpeed, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
-
+	result, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
 	return
 }
 
-// TODO: почти одинаковые функции - вынести в отдельную
+/* Обороты вентилятора GPU */
+func getGpuFanSpeed(gpuNumber int) (gpuFanSpeed int) {
+	osCommandTemplate := "ethos-smi -g %d | grep \"* Fan Speed\" | cut -f 5 -d \" \" | rev | cut -c 2- | rev"
+	gpuFanSpeed = runOsCommand(gpuNumber, osCommandTemplate)
+	return
+}
+
 /* Температура GPU */
 func getGpuTemp(gpuNumber int) (gpuTemp int) {
-	// Нумерация GPU с нуля
-
-	command := fmt.Sprintf("ethos-smi -g %d | grep \"* Temperature\" | cut -f 4 -d \" \" | rev | cut -c 2- | rev", gpuNumber)
-	out, err := exec.Command("bash", "-c", command).Output()
-
-	if err != nil {
-		log.Debugf("Failed to execute command: %s", out)
-	}
-
-	gpuTemp, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
-	//log.Debugf("GPU temperature: '%d'", gpuTemp)
-
+	osCommandTemplate := "ethos-smi -g %d | grep \"* Temperature\" | cut -f 4 -d \" \" | rev | cut -c 2- | rev"
+	gpuTemp = runOsCommand(gpuNumber, osCommandTemplate)
 	return
 }
 
@@ -216,20 +207,10 @@ func checkValidInRange(minimum, maximum, value int) (result bool) {
 
 /* Количество GPU в системе */
 func getGpuQuantity() (gpuQuantity int) {
-
-	command := "/opt/ethos/bin/ethos-smi | grep \"\\[\" | grep \"\\]\" | grep GPU | tail -1 | cut -f 1 -d \" \" | cut -c 4,5"
-	out, err := exec.Command("bash", "-c", command).Output()
-
-	if err != nil {
-		log.Debugf("Failed to execute command: %s", out)
-	}
-
-	gpuQuantity, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
-
+	osCommandTemplate := "/opt/ethos/bin/ethos-smi | grep \"\\[\" | grep \"\\]\" | grep GPU | tail -1 | cut -f %d -d \" \" | cut -c 4,5"
+	gpuQuantity = runOsCommand(1, osCommandTemplate)
 	gpuQuantity += 1 // Нумерация GPU в системе начинается с нуля
-
 	log.Debugf("GPU quantity: '%d'", gpuQuantity)
-
 	return
 }
 
