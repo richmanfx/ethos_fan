@@ -99,6 +99,10 @@ func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speed
 
 /* Новая скорость кулеров при низкой температуре */
 func checkLowTemp(currentTemp int, lowTemp int, currentFanSpeed int, minFanSpeed int, speedStep int) (newFanSpeed int) {
+
+	log.Infof("currentTemp: %d", currentTemp)
+	log.Infof("highTemp: %d", lowTemp)
+
 	if currentTemp < lowTemp {
 		if currentFanSpeed > minFanSpeed {
 			newFanSpeed = currentFanSpeed - speedStep
@@ -111,6 +115,7 @@ func checkLowTemp(currentTemp int, lowTemp int, currentFanSpeed int, minFanSpeed
 
 /* Новая скорость кулеров при высокой температуре */
 func checkHighTemp(currentTemp int, highTemp int, currentFanSpeed int, speedStep int) (newFanSpeed int) {
+
 	if currentTemp > highTemp {
 		if currentFanSpeed < 100 {
 			if currentFanSpeed > 94 {
@@ -119,8 +124,10 @@ func checkHighTemp(currentTemp int, highTemp int, currentFanSpeed int, speedStep
 				newFanSpeed = currentFanSpeed + speedStep
 			}
 		} else {
-			newFanSpeed = currentFanSpeed
+			newFanSpeed = 100
 		}
+	} else {
+		newFanSpeed = currentFanSpeed
 	}
 
 	return newFanSpeed

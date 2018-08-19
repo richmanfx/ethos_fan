@@ -56,16 +56,41 @@ func TestCheckValidInRange(t *testing.T) {
 	}
 }
 
-func TestSetNewFanSpeedForAllGpu(t *testing.T) {
+func TestCheckHighTemp(t *testing.T) {
 
 	type TestData struct {
-		gpuQuantity  int
-		initFanSpeed int
-		lowTemp      int
-		highTemp     int
-		speedStep    int
-		minFanSpeed  int
-		expectedResult
+		currentTemp         int
+		highTemp            int
+		currentFanSpeed     int
+		speedStep           int
+		expectedNewFanSpeed int
 	}
 
+	var testDataSlice = make([]TestData, 0, 10)
+
+	testDataSlice = append(testDataSlice,
+		TestData{currentTemp: -10, highTemp: 60, currentFanSpeed: 80, speedStep: 5, expectedNewFanSpeed: 80},
+		TestData{currentTemp: 0, highTemp: 60, currentFanSpeed: 80, speedStep: 5, expectedNewFanSpeed: 80},
+		TestData{currentTemp: 50, highTemp: 60, currentFanSpeed: 80, speedStep: 5, expectedNewFanSpeed: 80},
+		TestData{currentTemp: 60, highTemp: 60, currentFanSpeed: 80, speedStep: 5, expectedNewFanSpeed: 80},
+		TestData{currentTemp: 65, highTemp: 60, currentFanSpeed: 80, speedStep: 5, expectedNewFanSpeed: 85},
+		TestData{currentTemp: 70, highTemp: 60, currentFanSpeed: 100, speedStep: 5, expectedNewFanSpeed: 100},
+		TestData{currentTemp: 70, highTemp: 60, currentFanSpeed: 103, speedStep: 5, expectedNewFanSpeed: 100},
+		TestData{currentTemp: 70, highTemp: 60, currentFanSpeed: 94, speedStep: 5, expectedNewFanSpeed: 99},
+		TestData{currentTemp: 70, highTemp: 60, currentFanSpeed: 95, speedStep: 5, expectedNewFanSpeed: 100},
+	)
+
+	for _, testDataItem := range testDataSlice {
+
+		actualNewFanSpeed := checkHighTemp(
+			testDataItem.currentTemp,
+			testDataItem.highTemp,
+			testDataItem.currentFanSpeed,
+			testDataItem.speedStep,
+		)
+
+		if actualNewFanSpeed != testDataItem.expectedNewFanSpeed {
+			t.Errorf("Invalid new fan speed: '%d'. Expect: '%d'", actualNewFanSpeed, testDataItem.expectedNewFanSpeed)
+		}
+	}
 }
