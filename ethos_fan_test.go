@@ -66,7 +66,7 @@ func TestCheckHighTemp(t *testing.T) {
 		expectedNewFanSpeed int
 	}
 
-	var testDataSlice = make([]TestData, 0, 10)
+	var testDataSlice = make([]TestData, 0, 9)
 
 	testDataSlice = append(testDataSlice,
 		TestData{currentTemp: -10, highTemp: 60, currentFanSpeed: 80, speedStep: 5, expectedNewFanSpeed: 80},
@@ -93,4 +93,43 @@ func TestCheckHighTemp(t *testing.T) {
 			t.Errorf("Invalid new fan speed: '%d'. Expect: '%d'", actualNewFanSpeed, testDataItem.expectedNewFanSpeed)
 		}
 	}
+}
+
+func TestCheckLowTemp(t *testing.T) {
+
+	type TestData struct {
+		currentTemp         int
+		lowTemp             int
+		currentFanSpeed     int
+		minFanSpeed         int
+		speedStep           int
+		expectedNewFanSpeed int
+	}
+
+	var testDataSlice = make([]TestData, 0, 6)
+
+	testDataSlice = append(testDataSlice,
+		TestData{currentTemp: -10, lowTemp: 50, currentFanSpeed: 80, minFanSpeed: 30, speedStep: 5, expectedNewFanSpeed: 75},
+		TestData{currentTemp: 0, lowTemp: 50, currentFanSpeed: 80, minFanSpeed: 30, speedStep: 5, expectedNewFanSpeed: 75},
+		TestData{currentTemp: 30, lowTemp: 50, currentFanSpeed: 80, minFanSpeed: 30, speedStep: 5, expectedNewFanSpeed: 75},
+		TestData{currentTemp: 33, lowTemp: 50, currentFanSpeed: 80, minFanSpeed: 30, speedStep: 5, expectedNewFanSpeed: 75},
+		TestData{currentTemp: 50, lowTemp: 50, currentFanSpeed: 80, minFanSpeed: 30, speedStep: 5, expectedNewFanSpeed: 80},
+		TestData{currentTemp: 60, lowTemp: 50, currentFanSpeed: 80, minFanSpeed: 30, speedStep: 5, expectedNewFanSpeed: 80},
+	)
+
+	for _, testDataItem := range testDataSlice {
+
+		actualNewFanSpeed := checkLowTemp(
+			testDataItem.currentTemp,
+			testDataItem.lowTemp,
+			testDataItem.currentFanSpeed,
+			testDataItem.minFanSpeed,
+			testDataItem.speedStep,
+		)
+
+		if actualNewFanSpeed != testDataItem.expectedNewFanSpeed {
+			t.Errorf("Invalid new fan speed: '%d'. Expect: '%d'", actualNewFanSpeed, testDataItem.expectedNewFanSpeed)
+		}
+	}
+
 }

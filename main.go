@@ -84,12 +84,18 @@ func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speed
 			log.Debugf("GPU %d: Out of temperature range %d...%d °C", gpu, lowTemp, highTemp)
 
 			// Новая скорость кулеров при высокой температуре
-			newFanSpeed = checkHighTemp(currentTemp, highTemp, currentFanSpeed, speedStep)
+			if currentTemp > highTemp {
+				newFanSpeed = checkHighTemp(currentTemp, highTemp, currentFanSpeed, speedStep)
+			}
 
 			// Новая скорость кулеров при низкой температуре
-			newFanSpeed = checkLowTemp(currentTemp, lowTemp, currentFanSpeed, minFanSpeed, speedStep)
+			if currentTemp < lowTemp {
+				newFanSpeed = checkLowTemp(currentTemp, lowTemp, currentFanSpeed, minFanSpeed, speedStep)
+			}
 
-			if (currentTemp > highTemp) || (currentTemp < lowTemp) {
+			// Выставляем новую скорость
+			if newFanSpeed != currentFanSpeed {
+				//if (currentTemp > highTemp) || (currentTemp < lowTemp) {
 				setGpuFanSpeed(gpu, newFanSpeed)
 			}
 
@@ -97,11 +103,8 @@ func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speed
 	}
 }
 
-/* Новая скорость кулеров при низкой температуре */
+/* Новая скорость кулеров при температуре ниже нижнего уровня */
 func checkLowTemp(currentTemp int, lowTemp int, currentFanSpeed int, minFanSpeed int, speedStep int) (newFanSpeed int) {
-
-	log.Infof("currentTemp: %d", currentTemp)
-	log.Infof("highTemp: %d", lowTemp)
 
 	if currentTemp < lowTemp {
 		if currentFanSpeed > minFanSpeed {
@@ -109,11 +112,13 @@ func checkLowTemp(currentTemp int, lowTemp int, currentFanSpeed int, minFanSpeed
 		} else {
 			newFanSpeed = minFanSpeed
 		}
+	} else {
+		newFanSpeed = currentFanSpeed
 	}
 	return newFanSpeed
 }
 
-/* Новая скорость кулеров при высокой температуре */
+/* Новая скорость кулеров при температуре выше верхнего уровня */
 func checkHighTemp(currentTemp int, highTemp int, currentFanSpeed int, speedStep int) (newFanSpeed int) {
 
 	if currentTemp > highTemp {
@@ -155,7 +160,7 @@ func setGpuFanSpeed(gpuNumber, newFanSpeed int) {
 			log.Debugf("Failed to execute command: %s", out)
 		}
 
-		log.Debugf("New GPU fan speed: '%s'", strings.Trim(string(out), "\n"))
+		log.Debugf("GPU %d: %s", gpuNumber, strings.Trim(string(out), "\n"))
 	}
 }
 
