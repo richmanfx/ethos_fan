@@ -137,14 +137,19 @@ func setInitialFanSpeed(gpuQuantity, initFanSpeed int) {
 /* Выставить обороты вентиляторов GPU */
 func setGpuFanSpeed(gpuNumber, newFanSpeed int) {
 	// Нумерация GPU с нуля
-	command := fmt.Sprintf("sudo ethos-smi --gpu %d --fan %d | cut -c 3-", gpuNumber, newFanSpeed)
-	out, err := exec.Command("bash", "-c", command).Output()
 
-	if err != nil {
-		log.Debugf("Failed to execute command: %s", out)
+	if newFanSpeed < 5 {
+		log.Debugf("Alarm!!! New fan speed extremely low: '%v'", newFanSpeed)
+	} else {
+		command := fmt.Sprintf("sudo ethos-smi --gpu %d --fan %d | cut -c 3-", gpuNumber, newFanSpeed)
+		out, err := exec.Command("bash", "-c", command).Output()
+
+		if err != nil {
+			log.Debugf("Failed to execute command: %s", out)
+		}
+
+		log.Debugf("New GPU fan speed: '%s'", strings.Trim(string(out), "\n"))
 	}
-
-	log.Debugf("GPU %d: %s", gpuNumber, strings.Trim(string(out), "\n"))
 }
 
 // TODO: почти одинаковые функции - вынести в отдельную
@@ -159,7 +164,6 @@ func getGpuFanSpeed(gpuNumber int) (gpuFanSpeed int) {
 	}
 
 	gpuFanSpeed, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
-	//log.Debugf("GPU fan speed: '%d'", gpuFanSpeed)
 
 	return
 }
