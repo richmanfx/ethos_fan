@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -47,18 +48,19 @@ func main() {
 	// Получить количество GPU в системе
 	gpuQuantity = getGpuQuantity()
 
-	log.Debugf("GPUs: %d", gpuQuantity)
-
-	log.Debugf("Temperature GPU0: %d", getGpuTemp(0))
-
-	log.Debugf("Fan speed GPU0: %d", getGpuFanSpeed(0))
-
-	//setGpuFanSpeed(4, 40)
-
 	// Выставить начальные скорости вентиляторов
 	setInitialFanSpeed(gpuQuantity, initFanSpeed)
 
 	// Основной цикл
+	for {
+		log.Debugln("-=========================================================-")
+		log.Debugf("Cycle time: %d seconds.", sleepTime)
+		setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speedStep, minFanSpeed)
+
+		time.Sleep(time.Duration(sleepTime) * time.Second)
+
+		// TODO: Здесь нужно перехватывать SIGINT и выходить?
+	}
 
 }
 
@@ -89,7 +91,6 @@ func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speed
 
 			if (currentTemp > highTemp) || (currentTemp < lowTemp) {
 				setGpuFanSpeed(gpu, newFanSpeed)
-				log.Debugf("GPU %d: Set new fan speed: %d %%", gpu, newFanSpeed)
 			}
 
 		}
@@ -127,12 +128,10 @@ func checkHighTemp(currentTemp int, highTemp int, currentFanSpeed int, speedStep
 
 /* Первоначальная установка оборотов вентиляторов после старта системы */
 func setInitialFanSpeed(gpuQuantity, initFanSpeed int) {
-
 	for gpu := 0; gpu <= gpuQuantity-1; gpu++ {
 		log.Debugf("GPU: %d, initFanSpeed: %d", gpu, initFanSpeed)
 		setGpuFanSpeed(gpu, initFanSpeed)
 	}
-
 }
 
 /* Выставить обороты вентиляторов GPU */
@@ -145,7 +144,7 @@ func setGpuFanSpeed(gpuNumber, newFanSpeed int) {
 		log.Debugf("Failed to execute command: %s", out)
 	}
 
-	log.Debugf("New GPU fan speed: '%s'", strings.Trim(string(out), "\n"))
+	log.Debugf("GPU %d: %s", gpuNumber, strings.Trim(string(out), "\n"))
 }
 
 // TODO: почти одинаковые функции - вынести в отдельную
@@ -160,7 +159,7 @@ func getGpuFanSpeed(gpuNumber int) (gpuFanSpeed int) {
 	}
 
 	gpuFanSpeed, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
-	log.Debugf("GPU fan speed: '%d'", gpuFanSpeed)
+	//log.Debugf("GPU fan speed: '%d'", gpuFanSpeed)
 
 	return
 }
@@ -178,7 +177,7 @@ func getGpuTemp(gpuNumber int) (gpuTemp int) {
 	}
 
 	gpuTemp, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
-	log.Debugf("GPU temperature: '%d'", gpuTemp)
+	//log.Debugf("GPU temperature: '%d'", gpuTemp)
 
 	return
 }
@@ -191,13 +190,11 @@ func getGpuTemp(gpuNumber int) (gpuTemp int) {
  *    Return: True - значение в диапазоне, False - значение вне диапазона    *
  *****************************************************************************/
 func checkValidInRange(minimum, maximum, value int) (result bool) {
-
 	if (value >= minimum) && (value <= maximum) {
 		result = true
 	} else {
 		result = false
 	}
-
 	return result
 }
 
