@@ -141,7 +141,7 @@ func checkHighTemp(currentTemp int, highTemp int, currentFanSpeed int, speedStep
 /* Первоначальная установка оборотов вентиляторов после старта системы */
 func setInitialFanSpeed(gpuQuantity, initFanSpeed int) {
 	for gpu := 0; gpu <= gpuQuantity-1; gpu++ {
-		log.Debugf("GPU: %d, initFanSpeed: %d", gpu, initFanSpeed)
+		log.Debugf("GPU %d: The initial speed of the fans: %d%%", gpu, initFanSpeed)
 		setGpuFanSpeed(gpu, initFanSpeed)
 	}
 }
