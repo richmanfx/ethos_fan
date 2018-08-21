@@ -96,7 +96,7 @@ func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speed
 			// Выставляем новую скорость
 			if newFanSpeed != currentFanSpeed {
 				//if (currentTemp > highTemp) || (currentTemp < lowTemp) {
-				setGpuFanSpeed(gpu, newFanSpeed)
+				go setGpuFanSpeed(gpu, newFanSpeed)
 			}
 
 		}
@@ -160,7 +160,13 @@ func setGpuFanSpeed(gpuNumber, newFanSpeed int) {
 			log.Debugf("Failed to execute command: %s", out)
 		}
 
-		log.Debugf("GPU %d: %s", gpuNumber, strings.Trim(string(out), "\n"))
+		// Но всегда возвращается информация из ОС после изменения скорости (например для nVidea карт???)
+		if len(strings.Trim(string(out), "\n")) < 5 {
+			log.Debugf("GPU %d: Set %d%% fan.", gpuNumber, newFanSpeed)
+		} else {
+			log.Debugf("GPU %d: %s", gpuNumber, strings.Trim(string(out), "\n"))
+		}
+
 	}
 }
 
