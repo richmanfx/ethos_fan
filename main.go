@@ -178,6 +178,10 @@ func runOsCommand(commandParameter int, osCommandTemplate string) (result int) {
 		log.Debugf("Failed to execute command: %s", out)
 	}
 	result, _ = strconv.Atoi(strings.Trim(string(out), "\n"))
+	if result == 0 {
+		log.Debugf("Result of runOsCommand(): '%v'", result)
+		Exit(1)
+	}
 	return
 }
 
@@ -214,7 +218,8 @@ func checkValidInRange(minimum, maximum, value int) (result bool) {
 /* Количество GPU в системе */
 func getGpuQuantity() (gpuQuantity int) {
 	osCommandTemplate := "/opt/ethos/bin/ethos-smi | grep \"\\[\" | grep \"\\]\" | grep GPU | tail -1 | cut -f %d -d \" \" | cut -c 4,5"
-	gpuQuantity = runOsCommand(1, osCommandTemplate)
+	cutFieldNumber := 2
+	gpuQuantity = runOsCommand(cutFieldNumber, osCommandTemplate)
 	gpuQuantity += 1 // Нумерация GPU в системе начинается с нуля
 	log.Debugf("GPU quantity: '%d'", gpuQuantity)
 	return
