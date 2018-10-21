@@ -77,6 +77,7 @@ func setNewFanSpeedForAllGpu(gpuQuantity, initFanSpeed, lowTemp, highTemp, speed
 
 		currentTemp = getGpuTemp(gpu)
 		currentFanSpeed = getGpuFanSpeed(gpu)
+		log.Debugln("------------------------------------------")
 		log.Debugf("GPU %d: Temp: %d°C, Fan speed: %d%%", gpu, currentTemp, currentFanSpeed)
 
 		if !checkValidInRange(lowTemp, highTemp, currentTemp) {
