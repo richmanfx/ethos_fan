@@ -1,0 +1,29 @@
+#
+# Пример файла конфигурации для карт AMD в зимний балконный период.
+# Разместить этот файл как "fan.cfg" в директории "/usr/local/etc/ethos_fan".
+#
+# A sample configuration file for AMD in the winter loggia period.
+# Place this file as "fan.cfg" in the directory "/usr/local/etc/ethos_fan".
+#
+
+# High temperature, °C (default value - 60)
+HIGH_TEMP = 60
+
+# Low temperature, °C (default value - 55)
+LOW_TEMP = 55
+
+# Timeout between fan speed sets, sec (default value - 60)
+SLEEP_TIME = 30
+
+# Speed step, % (default value - 5)
+SPEED_STEP = 7
+
+# Initial fan speed when the program starts, % (default value - 80)
+INIT_FAN_SPEED = 70
+
+# Minimal fan speed, % (default value - 15)
+MIN_FAN_SPEED = 30
+
+# Debug level ("DEBUG" - debugging messages, "" - silence)
+DEBUG_LEVEL = "DEBUG"
+
